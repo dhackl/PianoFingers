@@ -1,0 +1,1 @@
+for /R "C:\01 Development\Unity Projects\FingersTest\Assets\Resources\Midis\Scales" %%f in (*.mid) do ren "%%F" "%%F.txt"
