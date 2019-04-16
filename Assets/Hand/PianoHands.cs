@@ -66,7 +66,9 @@ public class PianoHands : MonoBehaviour
                 lowerNote = note;
                 upperNote = hand.LastPlayedNote;
             }
-            if (lowerNote != upperNote && upperNote - lowerNote <= 12)
+            int interval = upperNote - lowerNote;
+
+            if (interval > 0 && interval <= 12)
             {
                 finger = fingering.GetOptimalFinger(hand.CurrentFinger + 1, lowerNote, upperNote, note < hand.LastPlayedNote) - 1;
             }
@@ -103,10 +105,33 @@ public class PianoHands : MonoBehaviour
             }
             else
             {
-                // Reset hand span
-                float zPos = player.GetNoteWorldPosition(hand.CurrentBaseNote, 2).z;
-                hand.TargetPositon = new Vector3(hand.transform.position.x, hand.transform.position.y, zPos);
-                hand.SetOctaveSpan(0.0f);
+                
+
+                if (interval > 2)
+                {
+                    hand.SetOctaveSpan(1.0f);
+                    int octaveMovement = hand == handLeft ? 3 : 4;
+                    float zPos = player.GetNoteWorldPosition(hand.CurrentBaseNote, octaveMovement).z;
+                    hand.TargetPositon = new Vector3(hand.transform.position.x, hand.transform.position.y, zPos);
+                }
+                else
+                {
+                    if (finger == 0)
+                        hand.CurrentBaseNote = note;
+                    else if (finger == 1)
+                        hand.CurrentBaseNote = note - 2;
+                    else if (finger == 2)
+                        hand.CurrentBaseNote = note - 4;
+                    else if (finger == 3)
+                        hand.CurrentBaseNote = note - 5;
+                    if (finger == 4)
+                        hand.CurrentBaseNote = note - 7;
+
+                    // Reset hand span
+                    float zPos = player.GetNoteWorldPosition(hand.CurrentBaseNote, 2).z;
+                    hand.TargetPositon = new Vector3(hand.transform.position.x, hand.transform.position.y, zPos);
+                    hand.SetOctaveSpan(0.0f);
+                }
             }
 
             int actualFinger = Mathf.Abs(handBase - finger);
