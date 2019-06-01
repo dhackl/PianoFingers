@@ -60,6 +60,7 @@ namespace CSharpSynth.Midi
             }
             catch (Exception ex)
             {
+                                Debug.Log(ex.ToString());
                 throw new Exception("Midi Failed to Load!", ex);
             }
             finally

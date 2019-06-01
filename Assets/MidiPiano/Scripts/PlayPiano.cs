@@ -8,6 +8,9 @@ using CSharpSynth.Midi;
 
 public class PlayPiano : MonoBehaviour
 {
+    public enum MidiSource { File, MidiIn }
+    public MidiSource midiSource = MidiSource.File;
+
     public float keyPressOffset = 0.02f;
 
     // Midi
@@ -19,9 +22,10 @@ public class PlayPiano : MonoBehaviour
     private float gain = 1f;
     private MidiSequencer midiSequencer;
     private StreamSynthesizer midiStreamSynthesizer;
+    private MidiUdpListener midiUdpListener;
 
     private int[] noteEvents;
-    private int currentNoteOnIndex;
+    public int CurrentNoteIndex { get; private set; }
 
     public GameObject keyboardObject;
 
@@ -33,6 +37,7 @@ public class PlayPiano : MonoBehaviour
 
     public event Action<int> OnNotePress;
     public event Action<int> OnNoteRelease;
+    public event Action OnStart;
 
     // Awake is called when the script instance
     // is being loaded.
@@ -45,13 +50,23 @@ public class PlayPiano : MonoBehaviour
 #endif
         sampleBuffer = new float[midiStreamSynthesizer.BufferSize];
         midiStreamSynthesizer.LoadBank(bankFilePath);
-        midiSequencer = new MidiSequencer(midiStreamSynthesizer);
-        midiSequencer.TempoScale = 1.0f;
 
-        //These will be fired by the midiSequencer when a song plays
-        midiSequencer.NoteOnEvent += new MidiSequencer.NoteOnEventHandler(MidiNoteOnHandler);
-        midiSequencer.NoteOffEvent += new MidiSequencer.NoteOffEventHandler(MidiNoteOffHandler);
+        if (midiSource == MidiSource.File)
+        {
+            midiSequencer = new MidiSequencer(midiStreamSynthesizer);
+            midiSequencer.TempoScale = 1.0f;
 
+            //These will be fired by the midiSequencer when a song plays
+            midiSequencer.NoteOnEvent += new MidiSequencer.NoteOnEventHandler(MidiNoteOnHandler);
+            midiSequencer.NoteOffEvent += new MidiSequencer.NoteOffEventHandler(MidiNoteOffHandler);
+        }
+        else if (midiSource == MidiSource.MidiIn)
+        {
+            midiUdpListener = new MidiUdpListener();
+            midiUdpListener.NoteOn += MidiInNoteOn;
+            midiUdpListener.NoteOff += MidiInNoteOff;
+            noteEvents = new int[0];
+        }
     }
 
     // Start is called just before any of the
@@ -71,7 +86,10 @@ public class PlayPiano : MonoBehaviour
         defaultKeyWhiteY = noteObjects[0].transform.position.y;
         defaultKeyBlackY = noteObjects[1].transform.position.y;
 
-        StartPlayback();
+        if (midiSource == MidiSource.File)
+            StartPlayback();
+        else if (midiSource == MidiSource.MidiIn)
+            midiUdpListener.Start();
     }
 
     public Vector3 GetNoteWorldPosition(int note)
@@ -116,21 +134,26 @@ public class PlayPiano : MonoBehaviour
 
     public int GetUpcomingNote()
     {
-        if (currentNoteOnIndex + 1 < noteEvents.Length)
-            return noteEvents[currentNoteOnIndex + 1];
+        if (CurrentNoteIndex + 1 < noteEvents.Length)
+            return noteEvents[CurrentNoteIndex + 1];
         return -1;
     }
 
     public void GetUpcomingNoteBuffer(int[] buffer)
     {
         int n = buffer.Length;
-        if (currentNoteOnIndex + n < noteEvents.Length)
+        if (CurrentNoteIndex + n < noteEvents.Length)
         {
             for (int i = 0; i < n; i++)
             {
-                buffer[i] = noteEvents[currentNoteOnIndex + i + 1];
+                buffer[i] = noteEvents[CurrentNoteIndex + i + 1];
             }
         }
+    }
+
+    public int[] GetAllNotes()
+    {
+        return noteEvents;
     }
 
     private void StartPlayback()
@@ -142,7 +165,10 @@ public class PlayPiano : MonoBehaviour
         // Pre-Fetch all note-on events - used for note prediction
         var midiEvents = midiSequencer._MidiFile.Tracks[0].MidiEvents;
         noteEvents = midiEvents.Where(ev => ev.midiChannelEvent == MidiHelper.MidiChannelEvent.Note_On).Select(ev => ev.parameter1 - 24).ToArray();
-        currentNoteOnIndex = -1;
+        CurrentNoteIndex = -1;
+
+        if (OnStart != null)
+            OnStart();
     }
 
     // Update is called every frame, if the
@@ -206,6 +232,18 @@ public class PlayPiano : MonoBehaviour
 
     }
 
+    private void OnDestroy()
+    {
+        if (midiSource == MidiSource.File)
+        {
+
+        }
+        else if (midiSource == MidiSource.MidiIn)
+        {
+            midiUdpListener.Stop();
+        }
+    }
+
     // See http://unity3d.com/support/documentation/ScriptReference/MonoBehaviour.OnAudioFilterRead.html for reference code
     //	If OnAudioFilterRead is implemented, Unity will insert a custom filter into the audio DSP chain.
     //
@@ -239,7 +277,7 @@ public class PlayPiano : MonoBehaviour
 
         notePressed[idx] = true;
 
-        currentNoteOnIndex++;
+        CurrentNoteIndex++;
     }
 
     public void MidiNoteOffHandler(int channel, int note)
@@ -251,4 +289,15 @@ public class PlayPiano : MonoBehaviour
         notePressed[idx] = false;
 
     }
+
+    private void MidiInNoteOn(int note)
+    {
+        notePressed[note] = true;
+    }
+
+    private void MidiInNoteOff(int note)
+    {
+        notePressed[note] = false;
+    }
+
 }

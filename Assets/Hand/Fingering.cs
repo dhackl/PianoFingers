@@ -78,7 +78,7 @@ public class Fingering
         {0,4,4,4,4,0,4,4,4,4,0,4}
     };
 
-    private FingerPair[] fingers =
+    private List<FingerPair> fingers = new List<FingerPair>()
     {
         new FingerPair() { lower = 1, upper = 2 },
         new FingerPair() { lower = 1, upper = 3 },
@@ -153,6 +153,149 @@ public class Fingering
         return optimalFinger;
     }
 
+    public int[] GetOptimalFingersDP(int[] notes)
+    {
+        int[,] f = new int[notes.Length - 1, 5];
+        List<int>[,] minimizerTable = new List<int>[notes.Length - 1, 5];
+
+        // ======================================================
+        // STEP 1: CALCULATE COST TABLES f[i](s)
+        for (int i = notes.Length - 1; i >= 1; i--)
+        {
+            // Consider the two current notes that form the next interval
+            int n1 = notes[i];
+            int n2 = notes[i - 1];
+
+            // Determine upper and lower note of current interval
+            int lowerNote = n2;
+            int upperNote = n1;
+            if (n1 < n2)
+            {
+                lowerNote = n1;
+                upperNote = n2;
+            }
+
+            int interval = (upperNote - lowerNote) - 1;
+            bool lowerBlack = piano.IsBlackKey(lowerNote);
+            bool upperBlack = piano.IsBlackKey(upperNote);
+            bool isDecreasing = n1 < n2;
+
+            // Determine, which cost table to choose from
+            int[,] costTable;
+            if (!lowerBlack && !upperBlack)
+                costTable = lowerWhiteUpperWhite;
+            else if (!lowerBlack && upperBlack)
+                costTable = lowerWhiteUpperBlack;
+            else if (lowerBlack && !upperBlack)
+                costTable = lowerBlackUpperWhite;
+            else
+                costTable = lowerBlackUpperBlack;
+
+            // Interval = -1 -> same note -> use finger from previous minimizer table
+            if (interval == -1)
+            {
+                for (int y = 0; y < 5; y++)
+                    minimizerTable[i - 1, y] = new List<int>() { minimizerTable[i, y][0] };
+                continue;
+            }
+
+            // Intervals > 12 should be considered an octave too
+            interval = Math.Min(interval, 11);
+
+            // Get cost table column of interval
+            int[] costColumn = costTable.GetColumn(interval);
+
+            // Calculate f[i](s)
+            for (int s = 0; s < 5; s++)
+            {
+                int minCost = 9999;
+                int[] sCosts = new int[5];
+
+                for (int x = 0; x < 5; x++)
+                {
+                    // Get f(s) from the previous intervals (unless first)
+                    int previousCost = 0;
+                    if (i < notes.Length - 1)
+                        previousCost = f[i, x]; // x is the previous s
+
+                    // Get cost table entry for s and x (don't forget the +1)
+                    int low = isDecreasing ? x + 1 : s + 1;
+                    int upp = isDecreasing ? s + 1 : x + 1;
+                    int idx = 0;
+                    //int idx = fingers.Select((pair, pairIdx) => new { pair, pairIdx }).First(a => a.pair.lower == low && a.pair.upper == upp).pairIdx;
+                    //int idx = fingers.IndexOf(fingers.First(pair => pair.lower == low && pair.upper == upp));
+                    for (int y = 0; y < fingers.Count; y++)
+                    {
+                        if (fingers[y].lower == low && fingers[y].upper == upp)
+                        {
+                            idx = y;
+                            break;
+                        }
+                    }
+                    int cost = costColumn[idx];
+
+                    cost += previousCost;
+
+                    // Impossible fingering -> extra high cost (for convenience to keep the zeroes)
+                    if (cost == 0)
+                        cost = 99;
+
+                    sCosts[x] = cost;
+                    if (cost <= minCost)
+                    {
+                        minCost = cost;
+                    }
+                }
+
+                f[i - 1, s] = minCost;
+                for (int x = 0; x < 5; x++)
+                {
+                    if (sCosts[x] == minCost)
+                    {
+                        if (minimizerTable[i - 1, s] == null)
+                            minimizerTable[i - 1, s] = new List<int>();
+                        minimizerTable[i - 1, s].Add(x);
+                    }
+                }
+
+            }
+            
+        }
+
+        // ======================================================
+        // STEP 2: REVERSE COST TABLES TO FIND OPTIMAL FINGERING
+        int[] optimalFingers = new int[notes.Length];
+
+        // Calculate the very first s by looking at the minimal cost
+        int firstMin = 9999;
+        int firstFinger = 0;
+        int firstS = 0;
+        for (int s = 0; s < 5; s++)
+        {
+            int cost = f[0, s];
+            if (cost < firstMin)
+            {
+                firstMin = cost;
+                firstFinger = s;
+                firstS = minimizerTable[0, s][0]; // Just use first finger for now (if multiple possibilities exist) 
+            }
+        }
+
+        optimalFingers[0] = firstFinger + 1;
+        optimalFingers[1] = firstS + 1;
+
+        // Proceed until the end with the given s values
+        int nextS = firstS;
+        for (int i = 2; i < notes.Length - 1; i++)
+        {
+            Debug.Log(nextS);
+            int finger = minimizerTable[i - 1, nextS][0]; // Just use first finger for now (if multiple possibilities exist)
+            optimalFingers[i] = finger + 1;
+            nextS = finger;
+        }
+
+        return optimalFingers;
+    }
 
     private struct FingerPair
     {

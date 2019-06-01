@@ -16,22 +16,34 @@ public class PianoHands : MonoBehaviour
     private float initHandX;
 
     private Fingering fingering;
+    private int[] optimalFingers;
     private int[] upcomingNoteBuffer = new int[5];
 
     private static int handSwitches = 0;
+
+    void Awake()
+    {
+        fingering = new Fingering(player);
+    }
 
     // Use this for initialization
     void Start()
     {
         player.OnNotePress += OnNotePress;
         player.OnNoteRelease += OnNoteRelease;
+        player.OnStart += OnStartPiece;
 
         initHandX = handLeft.transform.position.x;
 
         if (useRightHandOnly)
             handLeft.TargetPositon += new Vector3(0, 0, 2.0f);
+        
+    }
 
-        fingering = new Fingering(player);
+    private void OnStartPiece()
+    {
+        // Pre-calculate fingering
+        optimalFingers = fingering.GetOptimalFingersDP(player.GetAllNotes());
     }
 
     private void OnNotePress(int note)
@@ -70,7 +82,7 @@ public class PianoHands : MonoBehaviour
 
             if (interval > 0 && interval <= 12)
             {
-                finger = fingering.GetOptimalFinger(hand.CurrentFinger + 1, lowerNote, upperNote, note < hand.LastPlayedNote) - 1;
+                //finger = fingering.GetOptimalFinger(hand.CurrentFinger + 1, lowerNote, upperNote, note < hand.LastPlayedNote) - 1;
             }
             else
             {
@@ -87,6 +99,8 @@ public class PianoHands : MonoBehaviour
                 finger = 0;
                 hand.CurrentBaseNote = note;
             }*/
+
+            finger = optimalFingers[player.CurrentNoteIndex];
 
             // Check if it requires a greater hand span
             if (finger > 4)
@@ -162,12 +176,14 @@ public class PianoHands : MonoBehaviour
 
             // Start with thumb or pinky - depending on the upcoming note(s)
             int nextNote = player.GetUpcomingNote();
-            int finger = handBase; 
-            
+            int finger = handBase;
+            finger = optimalFingers[player.CurrentNoteIndex];
+
             if (nextNote < note)
             {
                 // Start with pinky
                 finger = 4 - handBase;
+                finger = optimalFingers[player.CurrentNoteIndex];
                 zPos = player.GetNoteWorldPosition(note, -2).z;
                 hand.TargetPositon = new Vector3(hand.transform.position.x, hand.transform.position.y, zPos);
                 hand.CurrentBaseNote = note - 7;
