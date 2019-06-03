@@ -54,7 +54,7 @@ public class PlayPiano : MonoBehaviour
         if (midiSource == MidiSource.File)
         {
             midiSequencer = new MidiSequencer(midiStreamSynthesizer);
-            midiSequencer.TempoScale = 1.0f;
+            midiSequencer.TempoScale = 0.5f;
 
             //These will be fired by the midiSequencer when a song plays
             midiSequencer.NoteOnEvent += new MidiSequencer.NoteOnEventHandler(MidiNoteOnHandler);

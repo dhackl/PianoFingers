@@ -82,7 +82,7 @@ public class PianoHands : MonoBehaviour
 
             if (interval > 0 && interval <= 12)
             {
-                //finger = fingering.GetOptimalFinger(hand.CurrentFinger + 1, lowerNote, upperNote, note < hand.LastPlayedNote) - 1;
+                finger = fingering.GetOptimalFinger(hand.CurrentFinger + 1, lowerNote, upperNote, note < hand.LastPlayedNote) - 1;
             }
             else
             {
@@ -90,17 +90,27 @@ public class PianoHands : MonoBehaviour
                 finger = hand.CurrentFinger;
             }
 
-            /*int finger = whiteNote - whiteBaseNote;
+            //finger = whiteNote - whiteBaseNote;
 
             // Check if a cross-over should be performed
+            bool crossover = false;
             player.GetUpcomingNoteBuffer(upcomingNoteBuffer);
-            if (finger == 3 && upcomingNoteBuffer[0] > note && upcomingNoteBuffer[1] > upcomingNoteBuffer[0])
+            if (finger == 2 && upcomingNoteBuffer[0] > note && upcomingNoteBuffer[1] > upcomingNoteBuffer[0])
             {
-                finger = 0;
-                hand.CurrentBaseNote = note;
-            }*/
+                //finger = 0;
+                //hand.CurrentBaseNote = note;
+                crossover = true;
+            }
 
-            finger = optimalFingers[player.CurrentNoteIndex];
+            //finger = optimalFingers[player.CurrentNoteIndex];
+
+            // Crossover
+            /*bool crossover = false;
+            if (finger == 2 && player.CurrentNoteIndex + 1 < optimalFingers.Length && optimalFingers[player.CurrentNoteIndex + 1] == 0)
+            {
+                // Crossover with middle finger
+                crossover = true;
+            }*/
 
             // Check if it requires a greater hand span
             if (finger > 4)
@@ -119,8 +129,6 @@ public class PianoHands : MonoBehaviour
             }
             else
             {
-                
-
                 if (interval > 2)
                 {
                     hand.SetOctaveSpan(1.0f);
@@ -149,7 +157,7 @@ public class PianoHands : MonoBehaviour
             }
 
             int actualFinger = Mathf.Abs(handBase - finger);
-            hand.FingerDown(actualFinger);
+            hand.FingerDown(actualFinger, crossover);
             hand.LastPlayedNote = note;
             hand.CurrentFingerNotes[actualFinger] = note;
             
@@ -177,13 +185,13 @@ public class PianoHands : MonoBehaviour
             // Start with thumb or pinky - depending on the upcoming note(s)
             int nextNote = player.GetUpcomingNote();
             int finger = handBase;
-            finger = optimalFingers[player.CurrentNoteIndex];
+            //finger = optimalFingers[player.CurrentNoteIndex];
 
             if (nextNote < note)
             {
                 // Start with pinky
                 finger = 4 - handBase;
-                finger = optimalFingers[player.CurrentNoteIndex];
+                //finger = optimalFingers[player.CurrentNoteIndex];
                 zPos = player.GetNoteWorldPosition(note, -2).z;
                 hand.TargetPositon = new Vector3(hand.transform.position.x, hand.transform.position.y, zPos);
                 hand.CurrentBaseNote = note - 7;

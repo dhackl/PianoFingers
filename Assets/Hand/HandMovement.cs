@@ -34,13 +34,13 @@ public class HandMovement : MonoBehaviour
         TargetPositon = transform.position;
     }
 
-    public void FingerDown(int finger)
+    public void FingerDown(int finger, bool crossover = false)
     {
         string name = fingerNames[finger];
         int layer = finger + 1;
 
         animator.SetLayerWeight(layer, 1.0f);
-        animator.Play("Anim" + name, layer);
+        animator.Play("Anim" + (crossover ? "Cross" : "") + name, layer);
 
         CurrentFinger = finger;
     }

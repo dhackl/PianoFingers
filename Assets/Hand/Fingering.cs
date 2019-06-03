@@ -221,9 +221,7 @@ public class Fingering
                     // Get cost table entry for s and x (don't forget the +1)
                     int low = isDecreasing ? x + 1 : s + 1;
                     int upp = isDecreasing ? s + 1 : x + 1;
-                    int idx = 0;
-                    //int idx = fingers.Select((pair, pairIdx) => new { pair, pairIdx }).First(a => a.pair.lower == low && a.pair.upper == upp).pairIdx;
-                    //int idx = fingers.IndexOf(fingers.First(pair => pair.lower == low && pair.upper == upp));
+                    int idx = -1;
                     for (int y = 0; y < fingers.Count; y++)
                     {
                         if (fingers[y].lower == low && fingers[y].upper == upp)
@@ -232,13 +230,13 @@ public class Fingering
                             break;
                         }
                     }
-                    int cost = costColumn[idx];
+                    int cost = idx != -1 ? costColumn[idx] : 0;
 
                     cost += previousCost;
 
                     // Impossible fingering -> extra high cost (for convenience to keep the zeroes)
-                    if (cost == 0)
-                        cost = 99;
+                    if (cost == 0 || idx == -1)
+                        cost = 9999;
 
                     sCosts[x] = cost;
                     if (cost <= minCost)
@@ -288,11 +286,13 @@ public class Fingering
         int nextS = firstS;
         for (int i = 2; i < notes.Length - 1; i++)
         {
-            Debug.Log(nextS);
             int finger = minimizerTable[i - 1, nextS][0]; // Just use first finger for now (if multiple possibilities exist)
             optimalFingers[i] = finger + 1;
             nextS = finger;
         }
+
+        foreach (var fing in optimalFingers)
+            Debug.Log(fing);
 
         return optimalFingers;
     }
