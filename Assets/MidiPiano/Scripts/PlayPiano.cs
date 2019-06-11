@@ -13,6 +13,8 @@ public class PlayPiano : MonoBehaviour
 
     public float keyPressOffset = 0.02f;
 
+    public float tempoScale = 1.0f;
+
     // Midi
     public string midiFilePath = "Midis/fur_elise.mid";
     public string bankFilePath = "GM Bank/gm";
@@ -54,7 +56,7 @@ public class PlayPiano : MonoBehaviour
         if (midiSource == MidiSource.File)
         {
             midiSequencer = new MidiSequencer(midiStreamSynthesizer);
-            midiSequencer.TempoScale = 0.5f;
+            midiSequencer.TempoScale = tempoScale;
 
             //These will be fired by the midiSequencer when a song plays
             midiSequencer.NoteOnEvent += new MidiSequencer.NoteOnEventHandler(MidiNoteOnHandler);
@@ -97,8 +99,8 @@ public class PlayPiano : MonoBehaviour
         return noteObjects[note].transform.position;
     }
 
-    // Returns the note position + an offset of n white keys
-    public Vector3 GetNoteWorldPosition(int note, int whiteKeyOffset)
+    // Returns the note + an offset of n white keys
+    public int GetWhiteNoteWithOffset(int note, int whiteKeyOffset)
     {
         int newNote = note;
         int sign = Math.Sign(whiteKeyOffset);
@@ -110,6 +112,12 @@ public class PlayPiano : MonoBehaviour
                 i++;
         }
 
+        return newNote;
+    }
+
+    public Vector3 GetNoteWorldPosition(int note, int whiteKeyOffset)
+    {
+        int newNote = GetWhiteNoteWithOffset(note, whiteKeyOffset);
         return GetNoteWorldPosition(newNote);
     }
 

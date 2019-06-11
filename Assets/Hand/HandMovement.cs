@@ -34,15 +34,25 @@ public class HandMovement : MonoBehaviour
         TargetPositon = transform.position;
     }
 
-    public void FingerDown(int finger, bool crossover = false)
+    public void FingerDown(int finger, bool crossover = false, int crossDown = -1)
     {
         string name = fingerNames[finger];
         int layer = finger + 1;
-
-        animator.SetLayerWeight(layer, 1.0f);
-        animator.Play("Anim" + (crossover ? "Cross" : "") + name, layer);
+        
+        if (crossover && crossDown != -1)
+        {
+            animator.SetLayerWeight(crossDown + 1, 1.0f);
+            animator.Play("AnimCross" + fingerNames[crossDown] + "_Down", crossDown + 1);
+        }
+        else
+        {
+            animator.SetLayerWeight(layer, 1.0f);
+            animator.Play("Anim" + (crossover ? "Cross" : "") + name, layer);
+        }
 
         CurrentFinger = finger;
+
+
     }
 
     public void FingerUp(int finger)

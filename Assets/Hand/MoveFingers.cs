@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class MoveFingers : MonoBehaviour
 {
-    public Animator animator;
+    /*public Animator animator;
 
     private const int SpanLayer = 6;
     private string[] fingerNames = { "Thumb", "Index", "Middle", "Ring", "Pinky" };
@@ -29,10 +29,10 @@ public class MoveFingers : MonoBehaviour
 
             animator.Play("Anim" + name + "_Up", layer);
 
-            /*if (i == 2)
+            if (i == 2)
                 SetOctaveSpan(1.0f);
             if (i == 4)
-                SetOctaveSpan(0.0f);*/
+                SetOctaveSpan(0.0f);
         }
     }
 
@@ -46,5 +46,5 @@ public class MoveFingers : MonoBehaviour
     void Update()
     {
 
-    }
+    }*/
 }
