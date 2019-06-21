@@ -16,11 +16,26 @@ public class HandMovement : MonoBehaviour
 
     public List<int> CurrentFingerNotes { get; set; } // Which finger currently holds which note
 
-    public Vector3 TargetPositon
+    public Vector3 TargetPosition
     {
-        get { return transform.position; }
-        set { transform.position = value; }
+        get { return targetPosition; }
+        set
+        {
+            targetPosition = value;
+            float diff = Mathf.Abs(targetPosition.z - transform.position.z);
+            handSpeed = diff * 20.0f;
+            lerp = 0;
+            ypos = 0;
+            doArcMovement = diff > 0.5f;
+        }
     }
+    private Vector3 targetPosition;
+
+    private float baseYPos;
+    private float ypos;
+    private bool doArcMovement;
+
+    private float lerp;
 
     // Use this for initialization
     void Start()
@@ -31,7 +46,8 @@ public class HandMovement : MonoBehaviour
         for (int i = 0; i < 5; i++)
             CurrentFingerNotes.Add(-1);
 
-        TargetPositon = transform.position;
+        baseYPos = transform.position.y;
+        TargetPosition = transform.position;
     }
 
     public void FingerDown(int finger, bool crossover = false, int crossDown = -1)
@@ -90,5 +106,23 @@ public class HandMovement : MonoBehaviour
         /*Vector3 diff = TargetPositon - transform.position;
         if (diff.magnitude > 0.1f)
             transform.position += diff.normalized * handSpeed * Time.deltaTime;*/
+
+        lerp += Time.deltaTime * handSpeed;
+        Vector3 newPos = transform.position;
+
+        // Arc movement
+        if (doArcMovement)
+        {
+            if (lerp < 0.5f)
+                ypos += Time.deltaTime;
+            else
+                ypos -= Time.deltaTime;
+        }
+        newPos.y = baseYPos + ypos * 10.0f;
+
+        // Horizontal movement
+        newPos.z = Mathf.Lerp(transform.position.z, TargetPosition.z, lerp);
+
+        transform.position = newPos;
     }
 }

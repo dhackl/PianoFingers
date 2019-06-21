@@ -291,8 +291,8 @@ public class Fingering
             nextS = finger;
         }
 
-        foreach (var fing in optimalFingers)
-            Debug.Log(fing);
+        /*foreach (var fing in optimalFingers)
+            Debug.Log(fing);*/
 
         return optimalFingers;
     }

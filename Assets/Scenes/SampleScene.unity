@@ -3021,14 +3021,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 862437417}
-  m_LocalRotation: {x: 0.14553306, y: 0.5979102, z: 0.20794423, w: 0.7603175}
+  m_LocalRotation: {x: 0.05559907, y: 0.5694824, z: 0.27645478, w: 0.77212137}
   m_LocalPosition: {x: -0.00007207208, y: -0.00029616788, z: 0.00012040362}
   m_LocalScale: {x: 1, y: 1.0000001, z: 1}
   m_Children:
   - {fileID: 1414318897}
   m_Father: {fileID: 163148993}
   m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: -1.5680001, y: 75.952, z: 29.368002}
+  m_LocalEulerAnglesHint: {x: -13.239, y: 69.23, z: 30.240002}
 --- !u!1 &870552696
 GameObject:
   m_ObjectHideFlags: 0
@@ -3675,7 +3675,7 @@ PrefabInstance:
     - target: {fileID: 114410251209961380, guid: 394e55c20e770e34dbc7d27a1fb8833e,
         type: 3}
       propertyPath: midiFilePath
-      value: Midis/chopin-revolutionary.mid
+      value: Midis/fur_elise.mid
       objectReference: {fileID: 0}
     - target: {fileID: 114410251209961380, guid: 394e55c20e770e34dbc7d27a1fb8833e,
         type: 3}
@@ -3690,8 +3690,13 @@ PrefabInstance:
     - target: {fileID: 114410251209961380, guid: 394e55c20e770e34dbc7d27a1fb8833e,
         type: 3}
       propertyPath: tempoScale
-      value: 0.5
+      value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 114410251209961380, guid: 394e55c20e770e34dbc7d27a1fb8833e,
+        type: 3}
+      propertyPath: keyboardObject
+      value: 
+      objectReference: {fileID: 1114135892}
     - target: {fileID: 65136575521915406, guid: 394e55c20e770e34dbc7d27a1fb8833e,
         type: 3}
       propertyPath: m_Enabled
@@ -3712,6 +3717,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4bb8e5beea167ff47a58f8bb44f05763, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &1114135892 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1610293806651124, guid: 394e55c20e770e34dbc7d27a1fb8833e,
+    type: 3}
+  m_PrefabInstance: {fileID: 1114135890}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1132354841
 GameObject:
   m_ObjectHideFlags: 0
@@ -3992,14 +4003,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1209176044}
-  m_LocalRotation: {x: 0.14553086, y: 0.59791213, z: 0.20794232, w: 0.7603169}
+  m_LocalRotation: {x: 0.04090976, y: 0.5641267, z: 0.2872284, w: 0.77303773}
   m_LocalPosition: {x: -0.00007207208, y: -0.00029616788, z: 0.00012040362}
   m_LocalScale: {x: 1, y: 1.0000001, z: 1}
   m_Children:
   - {fileID: 1253816365}
   m_Father: {fileID: 44246745}
   m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: -27.058, y: 58.339005, z: 36.481003}
+  m_LocalEulerAnglesHint: {x: -15.119, y: 68.094, z: 30.518002}
 --- !u!1 &1219874749
 GameObject:
   m_ObjectHideFlags: 0
