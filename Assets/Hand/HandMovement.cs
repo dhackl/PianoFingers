@@ -68,7 +68,7 @@ public class HandMovement : MonoBehaviour
 
         CurrentFinger = finger;
 
-
+        Debug.Log(finger);
     }
 
     public void FingerUp(int finger)
@@ -98,6 +98,17 @@ public class HandMovement : MonoBehaviour
                 return true;
         }
         return false;
+    }
+
+    public int GetOccupiedFingerCount()
+    {
+        int count = 0;
+        for (int i = 0; i < 5; i++)
+        {
+            if (IsFingerOccupied(i))
+                count++;
+        }
+        return count;
     }
 
     // Update is called once per frame

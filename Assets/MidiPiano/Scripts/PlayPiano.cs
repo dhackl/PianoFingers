@@ -34,12 +34,13 @@ public class PlayPiano : MonoBehaviour
     private GameObject[] noteObjects;
     private bool[] notePressed;
     private bool[] previousNotePressed;
+    private int[] noteChannels;
     private float defaultKeyWhiteY;
     private float defaultKeyBlackY;
 
-    public event Action<int> OnNotePress;
-    public event Action<int> OnNoteRelease;
-    public event Action OnStart;
+    public event Action<int, int> OnNotePress;
+    public event Action<int, int> OnNoteRelease;
+    public event Action<Action> OnBeforeStart;
 
     // Awake is called when the script instance
     // is being loaded.
@@ -78,6 +79,7 @@ public class PlayPiano : MonoBehaviour
         noteObjects = new GameObject[CreatePiano.KEY_COUNT];
         notePressed = new bool[CreatePiano.KEY_COUNT];
         previousNotePressed = new bool[CreatePiano.KEY_COUNT];
+        noteChannels = new int[CreatePiano.KEY_COUNT];
         for (int i = 0; i < CreatePiano.KEY_COUNT; i++)
         {
             noteObjects[i] = keyboardObject.gameObject.transform.GetChild(i).gameObject;
@@ -89,7 +91,7 @@ public class PlayPiano : MonoBehaviour
         defaultKeyBlackY = noteObjects[1].transform.position.y;
 
         if (midiSource == MidiSource.File)
-            StartPlayback();
+            LoadMidi();
         else if (midiSource == MidiSource.MidiIn)
             midiUdpListener.Start();
     }
@@ -164,19 +166,23 @@ public class PlayPiano : MonoBehaviour
         return noteEvents;
     }
 
-    private void StartPlayback()
+    private void LoadMidi()
     {
         midiSequencer.LoadMidi(midiFilePath, false);
         midiSequencer.Looping = false;
-        midiSequencer.Play();
-
+        
         // Pre-Fetch all note-on events - used for note prediction
         var midiEvents = midiSequencer._MidiFile.Tracks[0].MidiEvents;
         noteEvents = midiEvents.Where(ev => ev.midiChannelEvent == MidiHelper.MidiChannelEvent.Note_On).Select(ev => ev.parameter1 - 24).ToArray();
         CurrentNoteIndex = -1;
 
-        if (OnStart != null)
-            OnStart();
+        if (OnBeforeStart != null)
+            OnBeforeStart(StartPlayback);
+    }
+
+    private void StartPlayback()
+    {
+        midiSequencer.Play();
     }
 
     // Update is called every frame, if the
@@ -198,7 +204,7 @@ public class PlayPiano : MonoBehaviour
                 {
                     // New key press
                     if (OnNotePress != null)
-                        OnNotePress(i);
+                        OnNotePress(i, noteChannels[i]);
                 }
             }
             else
@@ -212,7 +218,7 @@ public class PlayPiano : MonoBehaviour
                 {
                     // New key release
                     if (OnNoteRelease != null)
-                        OnNoteRelease(i);
+                        OnNoteRelease(i, noteChannels[i]);
                 }
             }
 
@@ -284,6 +290,7 @@ public class PlayPiano : MonoBehaviour
             idx = CreatePiano.KEY_COUNT;
 
         notePressed[idx] = true;
+        noteChannels[idx] = channel;
 
         CurrentNoteIndex++;
     }
@@ -295,12 +302,12 @@ public class PlayPiano : MonoBehaviour
             idx = CreatePiano.KEY_COUNT;
 
         notePressed[idx] = false;
-
     }
 
     private void MidiInNoteOn(int note)
     {
         notePressed[note] = true;
+        noteChannels[note] = 0;
     }
 
     private void MidiInNoteOff(int note)

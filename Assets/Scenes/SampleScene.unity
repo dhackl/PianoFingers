@@ -1565,7 +1565,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 412087502}
-  m_LocalRotation: {x: 0.5, y: 0.5, z: -0.5, w: 0.5}
+  m_LocalRotation: {x: 0.49767852, y: 0.50231075, z: -0.50231075, w: 0.49767852}
   m_LocalPosition: {x: -2.544, y: 2.16, z: 9.369}
   m_LocalScale: {x: 0.05, y: 0.05, z: 0.05}
   m_Children:
@@ -1573,7 +1573,7 @@ Transform:
   - {fileID: 2042029934}
   m_Father: {fileID: 345395770}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: -90}
+  m_LocalEulerAnglesHint: {x: 90.00001, y: 0, z: -90.531006}
 --- !u!114 &412087505
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3675,7 +3675,7 @@ PrefabInstance:
     - target: {fileID: 114410251209961380, guid: 394e55c20e770e34dbc7d27a1fb8833e,
         type: 3}
       propertyPath: midiFilePath
-      value: Midis/fur_elise.mid
+      value: Midis/mozart-545.mid
       objectReference: {fileID: 0}
     - target: {fileID: 114410251209961380, guid: 394e55c20e770e34dbc7d27a1fb8833e,
         type: 3}
@@ -3701,6 +3701,10 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Enabled
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4019709755235222, guid: 394e55c20e770e34dbc7d27a1fb8833e, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.020807736
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 65136575521915406, guid: 394e55c20e770e34dbc7d27a1fb8833e, type: 3}

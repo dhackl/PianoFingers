@@ -1,11 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Linq;
+using System;
 
 public class PianoHands : MonoBehaviour
 {
     private const int NoteLeftRightThreshold = 35;
-    private float BlackKeyOffsetX = 0.07f;
+    private float BlackKeyOffsetX = 0.09f;
 
     public PlayPiano player;
     public HandMovement handLeft;
@@ -31,7 +32,7 @@ public class PianoHands : MonoBehaviour
     {
         player.OnNotePress += OnNotePress;
         player.OnNoteRelease += OnNoteRelease;
-        player.OnStart += OnStartPiece;
+        player.OnBeforeStart += OnStartPiece;
 
         initHandX = handLeft.transform.position.x;
 
@@ -40,16 +41,24 @@ public class PianoHands : MonoBehaviour
         
     }
 
-    private void OnStartPiece()
+    private void OnStartPiece(Action callback)
     {
         // Pre-calculate fingering
         optimalFingers = fingering.GetOptimalFingersDP(player.GetAllNotes());
+        callback();
     }
 
-    private void OnNotePress(int note)
+    private void OnNotePress(int note, int channel)
     {
-        HandMovement hand = note >= NoteLeftRightThreshold ? handRight : handLeft;
-        OnNotePressWithHandSingle(note, hand);
+        //HandMovement hand = note >= NoteLeftRightThreshold ? handRight : handLeft;
+        HandMovement hand = channel == 1 ? handLeft : handRight;
+
+        // Determine with algorithm to use, based on interval and chord state
+        int interval = Mathf.Abs(note - hand.LastPlayedNote);
+        if (interval < 12 && hand.GetOccupiedFingerCount() <= 1)
+            OnNotePressWithHand(note, hand);
+        else
+            OnNotePressWithHandSingle(note, hand);
     }
 
     private void OnNotePressWithHand(int note, HandMovement hand)
@@ -110,7 +119,7 @@ public class PianoHands : MonoBehaviour
                 if ((lowerFinger == 1 || lowerFinger == 2 || lowerFinger == 3) && upperFinger == 0)
                 {
                     // Crossover with index, middle or ring finger
-                    crossover = true;
+                    crossover = false;
                 }
             }
 
@@ -204,7 +213,7 @@ public class PianoHands : MonoBehaviour
             int finger = optimalFingers[player.CurrentNoteIndex] - 1;
 
             // Check first, if hand can be moved -> otherwise try to use the other hand
-            int interval = Mathf.Abs(note - hand.LastPlayedNote);
+            /*int interval = Mathf.Abs(note - hand.LastPlayedNote);
             if (!useRightHandOnly && handSwitches < 2 && hand.IsFingerOccupied(finger) && !otherHand.IsOccupied() && interval > 12)
             {
                 handSwitches++;
@@ -214,7 +223,7 @@ public class PianoHands : MonoBehaviour
             else
             {
                 handSwitches = 0;
-            }
+            }*/
             
             if (finger == 0)
                 hand.CurrentBaseNote = note;
@@ -289,7 +298,7 @@ public class PianoHands : MonoBehaviour
                 finger = hand.CurrentFinger;
             }
 
-            finger = whiteNote - whiteBaseNote;
+            //finger = whiteNote - whiteBaseNote;
 
             // Check if a cross-over should be performed
             player.GetUpcomingNoteBuffer(upcomingNoteBuffer);
@@ -333,7 +342,7 @@ public class PianoHands : MonoBehaviour
             // If not, move hand to the according position
 
             // Check first, if hand can be moved -> otherwise try to use the other hand
-            if (!useRightHandOnly && handSwitches < 2 && hand.IsOccupied() && !otherHand.IsOccupied())
+            /*if (!useRightHandOnly && handSwitches < 2 && hand.IsOccupied() && !otherHand.IsOccupied())
             {
                 handSwitches++;
                 OnNotePressWithHandSingle(note, otherHand);
@@ -342,7 +351,7 @@ public class PianoHands : MonoBehaviour
             else
             {
                 handSwitches = 0;
-            }
+            }*/
 
             float zPos = player.GetNoteWorldPosition(note, 2).z;
             hand.TargetPosition = new Vector3(hand.transform.position.x, hand.transform.position.y, zPos);
@@ -384,9 +393,10 @@ public class PianoHands : MonoBehaviour
         }
     }
 
-    private void OnNoteRelease(int note)
+    private void OnNoteRelease(int note, int channel)
     {
-        HandMovement hand = note >= NoteLeftRightThreshold ? handRight : handLeft;
+        //HandMovement hand = note >= NoteLeftRightThreshold ? handRight : handLeft;
+        HandMovement hand = channel == 1 ? handLeft : handRight;
 
         if (useRightHandOnly)
             hand = handRight;
